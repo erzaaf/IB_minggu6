@@ -1,44 +1,95 @@
-# Minggu 5 — Beyond Classical Search (IB 2026)
+# Tugas Kelompok Berbasis Kasus 02 — Beyond Classical Search
 
-Sumber: `Minggu ke-6_Beyond Classical Search.pdf` + slide Latihan (55) dan Tugas Kelompok Kasus 02 (57-59).
+## Kasus: 8-Queen
 
-## 1. Spesifikasi
+Puzzle 8-Queen: taruh **8 ratu** di papan 8x8 supaya tidak ada yang saling serang (baris, kolom, diagonal).
 
-### A. Latihan di Kelas (kertas, 1 iterasi)
-- Puzzle grid 3x3, isi 1-9 berbeda, jumlah tiap baris & kolom sama (=15).
-- Wajib: Hill Climbing, 4 tetangga.
-- Opsi 1: Simulated Annealing.
-- Opsi 2: Genetic Algorithm, populasi 4 individu.
-- Tulis di kertas, kumpul akhir kuliah. Kelompok maks 3.
+Dipilih dari 3 opsi (N-Queen / Sudoku / Kakuro) karena paling pas dengan modul: contoh Hill Climbing, SA, dan GA di modul semuanya pakai 8-Queen.
 
-### B. Tugas Kelompok — Berbasis Kasus 02
-1. Pilih 1 puzzle: N-Queen / Sudoku / Kakuro → repo ini pilih **N-Queen (8-Queen)**.
-2. Selesaikan dengan **DFS-Backtracking** (+ optimasi: MRV, LCV, Forward Checking, Arc Consistency).
-3. Selesaikan puzzle yang sama dengan **1 Local Search**: Hill Climbing / Simulated Annealing / Genetic Algorithm.
-4. Bandingkan: kualitas solusi (optimal?) dan kecepatan pencarian.
-5. Kelompok maks 3. Program bahasa bebas. Kumpul PDF `TugasKelompok_Rx_nim1_nim2_nim3.pdf` berisi hasil luaran program + analisis Backtracking vs Local Search. Durasi 1 minggu.
+Selesaikan 8-Queen dengan:
+1. **DFS-Backtracking** (+ optimasi: MRV, LCV, Forward Checking)
+2. **Local Search** — salah satu / semua dari:
+   - Hill Climbing (+ Restart)
+   - Simulated Annealing
+   - Genetic Algorithm
 
-## 2. Isi Repo
+Gunakan representasi kolom-per-kolom untuk DFS, dan representasi complete-state untuk Local Search.
 
-- `latihan.py` — simulasi 1 step magic 3x3: Hill Climbing 4 tetangga, SA, GA 4 individu. Fungsi objektif `cost = sum|baris-15|+sum|kolom-15|`, `fitness = 36-cost`.
-- `tugas_nqueen.py` — solver 8-Queen: DFS-Backtracking+FC, Hill Climbing+Restart, SA, GA. Representasi `state = list 8 angka`, `h = 28-attacks`, optimal `h=28`.
+Diskusikan perbedaan **kualitas solusi (optimal?) dan kecepatan pencarian** antara DFS-Backtracking vs Local Search.
 
-## 3. Cara Jalan
+---
 
+## 1. Definisi Puzzle
+
+Representasi (ikut modul):
+
+| Elemen | Isi |
+|--------|-----|
+| State | `list 8 angka`, index = kolom 0-7, value = baris 1-8. Contoh `<1e 2f ...>` di modul = `[5,6,...]` di kode |
+| Variable | Kolom `C0..C7` |
+| Domain | Baris `{1..8}` per kolom |
+| Constraint | `Ci != Cj` dan `|Ci-Cj| != |i-j|` untuk semua `i != j` |
+| Initial | Acak (Local Search) / kosong (DFS) |
+| Goal | `attacks = 0`, alias `h = 28` |
+
+Total pasang ratu: `7+6+5+4+3+2+1 = 28`.
+
+Start: `acak, misal [random 1-8 x8]`
+Goal: `0 serangan`
+
+---
+
+## 2. Nilai Fungsi Objektif h(n)
+
+Ikut modul hal 26-28, profit-oriented (makin besar makin baik):
+
+| State | attacks | h = 28 - attacks | Status |
+|-------|---------|------------------|--------|
+| optimal | 0 | 28 | goal |
+| hampir | 1 | 27 | local optimum |
+| awal acak | ~10-17 | ~11-18 | contoh modul `h=11` |
+
+Dipakai untuk Hill Climbing, SA (`delta = h_baru - h_lama`), dan GA (fitness).
+
+Contoh hitung (modul): total 28, 1 pasang serang `1a-8h` → `h = 28-1 = 27`.
+
+---
+
+## 3. Yang Harus Dibuat
+
+### Program sederhana (bahasa bebas, repo ini Python)
+
+File: `tugas_nqueen.py`
+
+Untuk tiap metode tampilkan:
+- solusi `list 8 angka`
+- jumlah `attacks` dan `h`
+- waktu pencarian
+- nodes / steps / iterasi / generasi
+
+Khusus DFS-Backtracking:
+- taruh ratu kolom-per-kolom
+- pakai Forward Checking (hapus baris/diagonal yang diserang dari domain depan)
+- ordering LCV/MRV untuk urutan baris
+- tampilkan `nodes` yang diekspansi
+
+Khusus Local Search:
+- Hill Climbing: generate 56 tetangga (geser 1 ratu dalam 1 kolom), ambil `h` terbesar, restart jika stuck
+- SA: ambil 1 tetangga acak, terima jika lebih baik atau `random < exp(delta/T)`, turunkan `T *= 0.95`
+- GA: populasi (contoh 20), seleksi roulette dari fitness, crossover 1 titik, mutasi acak
+
+Jalan:
 ```powershell
-python latihan.py
 python tugas_nqueen.py
 ```
 
-## 4. Hasil Ringkas (seed 42)
+### Analisis perbandingan
 
-- DFS: `[1,6,8,3,7,4,2,5]` h=28 optimal, ~0.55ms, 47 nodes.
-- Hill Climbing+Restart: optimal h=28.
-- SA: optimal h=28.
-- GA (pop20/gen200): h=27 tidak optimal → contoh trade-off.
-- Latihan S0 `[[1,2,3],[4,5,6],[7,8,9]]`: HC plateau `12<=12` stop, SA terima sideways `prob=1.0`, GA I4 terbaik 40%.
+- beda cara cari solusi DFS (incomplete → complete) vs Local (complete → complete, path-irrelevant)
+- beda kualitas: DFS lengkap & optimal vs Local bisa stuck local maxima/plateau/shoulder
+- beda kecepatan: `O(b^m)` DFS vs iterasi murah Local, plus memori
+- pengaruh restart / temperatur / ukuran populasi pada Local Search
 
-## 5. Analisis (untuk PDF)
+---
 
-- Kualitas: DFS lengkap & optimal, Local bisa terjebak local maxima/plateau tanpa restart/sideways/probabilitas.
-- Kecepatan: N=8 DFS masih menang `O(b^m)` kecil; N besar Local menang memori kecil & path-irrelevant.
+Mata kuliah: **Inteligensi Buatan — 2026**
