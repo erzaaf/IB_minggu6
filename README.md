@@ -96,71 +96,20 @@ python tugas_nqueen.py
 
 ## 5. Hasil Luaran Program
 
-Output di bawah memakai `random.seed(42)`. Angka waktu bisa sedikit berbeda di tiap mesin.
+Program dijalankan dengan `python tugas_nqueen.py` (memakai `random.seed(42)`, jadi semua angka selain waktu selalu sama; waktu bisa sedikit berbeda di tiap mesin).
 
-```
-=== 8-QUEEN: state awal dari soal (h_max=28, 0 serangan = goal) ===
-     0 1 2 3 4 5 6 7
-  0  . . . . . . . .
-  1  . . . . Q . . .
-  2  . . . . . . . .
-  3  . . Q Q . Q . Q
-  4  . . . . . . . .
-  5  . Q . . . . . .
-  6  Q . . . . . . .
-  7  . . . . . . Q .
-state=[7, 6, 4, 4, 2, 4, 8, 4] attacks=11 h=17
+### Demo: kondisi awal, DFS-Backtracking, dan Hill Climbing
 
-[DFS-Backtracking: MRV + LCV + Forward Checking + Branch & Bound]
-     0 1 2 3 4 5 6 7
-  0  . . . . Q . . .
-  1  . Q . . . . . .
-  2  . . . Q . . . .
-  3  . . . . . Q . .
-  4  . . . . . . . Q
-  5  . . Q . . . . .
-  6  Q . . . . . . .
-  7  . . . . . . Q .
-solusi=[7, 2, 6, 3, 1, 4, 8, 5] attacks=0 h=28 moved=5 nodes_first=17 nodes=194 waktu=2.25ms
+![Output demo program](img/output_demo.png)
 
-[HC murni]
-     0 1 2 3 4 5 6 7
-  0  . . . Q . . . .
-  1  . . . . Q . . .
-  2  . . Q . . . . .
-  3  . . . . . . . Q
-  4  . . . . . Q . .
-  5  . Q . . . . . .
-  6  Q . . . . . . .
-  7  . . . . . . Q .
-solusi=[7, 6, 3, 1, 2, 5, 8, 4] attacks=2 h=26 moved=3 steps=3 restart=0 dievaluasi=224 waktu=0.76ms sukses=False
+### Eksperimen: 100 percobaan per metode, semua dimulai dari kondisi awal soal
 
-[HC + sideways + restart]
-     0 1 2 3 4 5 6 7
-  0  . . . . Q . . .
-  1  . . Q . . . . .
-  2  Q . . . . . . .
-  3  . . . . . Q . .
-  4  . . . . . . . Q
-  5  . Q . . . . . .
-  6  . . . Q . . . .
-  7  . . . . . . Q .
-solusi=[3, 6, 2, 7, 1, 4, 8, 5] attacks=0 h=28 moved=5 steps=16 restart=0 dievaluasi=896 waktu=3.07ms sukses=True
-```
+![Output eksperimen program](img/output_eksperimen.png)
 
-### Tabel eksperimen (100 percobaan per metode, semua dimulai dari kondisi awal soal)
-
-| Metode | Sukses | Steps | Restart | State dievaluasi | Waktu (ms) | Moved (rata-rata/min) |
-|--------|--------|-------|---------|------------------|------------|-----------------------|
-| DFS (MRV+LCV+FC+B&B) | 100/100 | - | - | 194 node | 1.254 | 5.00 / 5 |
-| HC murni | 3/100 | 3.8 | 0.0 | 266.0 | 0.887 | 5.33 / 5 |
-| HC + restart | 100/100 | 26.3 | 7.0 | 1862.0 | 6.717 | 7.04 / 5 |
-| HC + sideways + restart | 100/100 | 20.6 | 0.1 | 1159.8 | 4.009 | 6.04 / 5 |
-
-Peluang sukses 1x HC murni dari state **acak** (1000 percobaan): **0.143**, sama dengan nilai p ≈ 0.14 di modul (slide 34).
+Peluang sukses 1x HC murni dari state **acak** adalah **0.143**, sama dengan nilai p ≈ 0.14 di modul (slide 34).
 
 Keterangan kolom:
-- **State dievaluasi** pada HC = 56 × jumlah pembangkitan tetangga. Pada DFS = jumlah node (penempatan ratu) yang dicoba.
+- **Dievaluasi** pada HC = 56 × jumlah pembangkitan tetangga. Pada DFS = jumlah node (penempatan ratu) yang dicoba.
 - **Moved** = jumlah ratu yang dipindah dari kondisi awal. Rata-rata dan minimum dihitung hanya dari percobaan yang sukses.
 
 ---
@@ -174,7 +123,7 @@ Keterangan kolom:
 - **Restart membuat HC selalu sukses, tetapi solusinya menjauh dari kondisi awal.** Rata-rata `moved` HC + restart adalah 7.04, karena restart membuang kondisi awal dan memulai dari state acak. Dengan sideways move, HC lebih sering lolos dari plateau tanpa restart, sehingga `moved` turun ke 6.04. Nilai minimum 5 kadang tercapai, tetapi tidak dijamin.
 
 ### b. Kecepatan pencarian
-- Untuk 8-Queen dengan kondisi awal ini, **DFS lebih cepat dan lebih hemat**: 194 node / ±1.3 ms. Sebagai pembanding, HC + sideways + restart butuh ±1160 state / ±4.0 ms, dan HC + restart butuh ±1862 state / ±6.7 ms.
+- Untuk 8-Queen dengan kondisi awal ini, **DFS lebih cepat dan lebih hemat**: 194 node / ±1.2 ms. Sebagai pembanding, HC + sideways + restart butuh ±1160 state / ±4.1 ms, dan HC + restart butuh ±1862 state / ±6.5 ms.
 - DFS cepat karena Forward Checking + MRV langsung memotong cabang yang pasti gagal, dan ukuran papannya kecil.
 - Satu langkah HC murah, tetapi tiap langkah mengevaluasi 56 tetangga dan setiap evaluasi menghitung ulang 28 pasang ratu. Biaya ini terkumpul di setiap restart.
 - Kompleksitas waktu DFS kasus terburuk tetap eksponensial `O(b^m)`. Untuk N yang sangat besar, local search jauh lebih unggul: modul slide 34 menyebut 3 juta queens bisa diselesaikan < 1 menit (Luby et al., 1993), sedangkan DFS tidak praktis untuk ukuran itu.
