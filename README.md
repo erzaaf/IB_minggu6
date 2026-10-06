@@ -4,7 +4,7 @@
 
 Puzzle 8-Queen: taruh **8 ratu** di papan 8x8 supaya tidak ada yang saling serang (baris, kolom, diagonal).
 
-Dipilih dari 3 opsi (N-Queen / Sudoku / Kakuro) karena paling pas dengan modul: contoh Hill Climbing, SA, dan GA di modul semuanya pakai 8-Queen.
+Dipilih dari 3 opsi (N-Queen / Sudoku / Kakuro) karena ruang statusnya jelas terdefinisi, constraint-nya biner dan mudah diverifikasi, serta kedua pendekatan (konstruktif dan perbaikan iteratif) dapat diterapkan langsung untuk perbandingan yang adil.
 
 Selesaikan 8-Queen dengan:
 1. **DFS-Backtracking** (+ optimasi: MRV, LCV, Forward Checking)
@@ -51,15 +51,14 @@ Ikut modul hal 26-28, profit-oriented (makin besar makin baik):
 
 Dipakai untuk Hill Climbing, SA (`delta = h_baru - h_lama`), dan GA (fitness).
 
-Contoh hitung (modul): total 28, 1 pasang serang `1a-8h` → `h = 28-1 = 27`.
+Contoh hitung: total 28, 1 pasang serang `1a-8h` → `h = 28-1 = 27`.
 
 ---
 
 ## 3. Yang Harus Dibuat
 
-### Program sederhana (bahasa bebas, repo ini Python)
+### Program sederhana
 
-File: `tugas_nqueen.py`
 
 Untuk tiap metode tampilkan:
 - solusi `list 8 angka`
@@ -78,10 +77,6 @@ Khusus Local Search:
 - SA: ambil 1 tetangga acak, terima jika lebih baik atau `random < exp(delta/T)`, turunkan `T *= 0.95`
 - GA: populasi (contoh 20), seleksi roulette dari fitness, crossover 1 titik, mutasi acak
 
-Jalan:
-```powershell
-python tugas_nqueen.py
-```
 
 ### Analisis perbandingan
 
